@@ -350,4 +350,5 @@ elif page == "Quotes":
         status = st.selectbox("Status", ["Draft","Submitted","Accepted","Rejected","Revised"])
         total_value = st.number_input("Total Value (£)", 0.0, 1e9, 0.0, step=5000.0)
         currency = st.selectbox("Currency", ["GBP","EUR"])
-        price_index = st.checkbox("Include price-index c_
+        price_index = st.checkbox("Include price-index clause")
+
