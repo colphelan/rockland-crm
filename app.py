@@ -12,6 +12,14 @@ from pathlib import Path
 import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine, text
+if "authenticated" not in st.session_state:
+    pwd = st.text_input("Enter password", type="password")
+    if pwd == os.getenv("APP_PASSWORD"):
+        st.session_state.authenticated = True
+        st.experimental_rerun()
+    elif pwd:
+        st.error("Wrong password")
+    st.stop()
 
 # -----------------------------
 # Streamlit page config
