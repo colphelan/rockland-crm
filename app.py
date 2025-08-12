@@ -14,7 +14,22 @@ LOGO_PATH = "rockland_logo.png"
 c1, c2 = st.columns([1, 6])
 with c1:
     if os.path.exists(LOGO_PATH):
-        st.image(LOGO_PATH, use_column_width=True)
+     import os
+from PIL import Image
+
+# Header
+LOGO_PATH = "rockland_logo.png"
+c1, c2 = st.columns([1, 6])
+with c1:
+    try:
+        if os.path.exists(LOGO_PATH) and os.path.getsize(LOGO_PATH) > 0:
+            st.image(Image.open(LOGO_PATH), use_column_width=True)
+    except Exception:
+        st.warning("Logo couldn't be loaded; continuing without it.")
+with c2:
+    st.title("Rockland Concrete — CRM")
+    st.caption("SQLite by default • Set POSTGRES_URL for multi-user PostgreSQL")
+   
 with c2:
     st.title("Rockland Concrete — CRM")
     st.caption("SQLite by default • Set POSTGRES_URL for multi-user PostgreSQL")
