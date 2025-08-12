@@ -3,6 +3,79 @@ import os
 import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text  # already present
+# ADD BELOW:
+SCHEMA_SQL = """
+CREATE TABLE IF NOT EXISTS accounts(
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  type TEXT,
+  region TEXT,
+  credit_limit REAL,
+  payment_terms TEXT,
+  risk_rating TEXT
+);
+CREATE TABLE IF NOT EXISTS contacts(
+  id SERIAL PRIMARY KEY,
+  account_id INTEGER REFERENCES accounts(id),
+  name TEXT,
+  role TEXT,
+  email TEXT,
+  phone TEXT
+);
+CREATE TABLE IF NOT EXISTS opportunities(
+  id SERIAL PRIMARY KEY,
+  account_id INTEGER REFERENCES accounts(id),
+  name TEXT,
+  stage TEXT,
+  expected_close_date DATE,
+  value REAL,
+  product_type TEXT,
+  region TEXT,
+  probability REAL,
+  source TEXT
+);
+CREATE TABLE IF NOT EXISTS quotes(
+  id SERIAL PRIMARY KEY,
+  opportunity_id INTEGER REFERENCES opportunities(id),
+  quote_number TEXT,
+  date DATE,
+  status TEXT,
+  total_value REAL,
+  currency TEXT,
+  price_index_clause INTEGER DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS quote_items(
+  id SERIAL PRIMARY KEY,
+  quote_id INTEGER REFERENCES quotes(id),
+  description TEXT,
+  unit TEXT,
+  qty REAL,
+  unit_price REAL,
+  lead_time_days INTEGER
+);
+CREATE TABLE IF NOT EXISTS activities(
+  id SERIAL PRIMARY KEY,
+  account_id INTEGER REFERENCES accounts(id),
+  opportunity_id INTEGER REFERENCES opportunities(id),
+  type TEXT,
+  subject TEXT,
+  due_date DATE,
+  owner TEXT,
+  notes TEXT,
+  completed INTEGER DEFAULT 0
+);
+"""
+def init_schema():
+    try:
+        with engine.begin() as con:
+            for stmt in SCHEMA_SQL.strip().split(";\n"):
+                s = stmt.strip()
+                if s:
+                    con.execute(text(s))
+        return True, "Schema created/verified."
+    except Exception as e:
+        return False, str(e)
 
 DEFAULT_SQLITE_URL = "sqlite:///data/crm.db"
 DB_URL = os.environ.get("POSTGRES_URL", DEFAULT_SQLITE_URL)
@@ -211,6 +284,11 @@ elif page == "Reports":
         st.info("No data yet.")
 
 elif page == "Settings":
+    st.markdown("### Database setup")
+if st.button("Create/verify tables (once)"):
+    ok, msg = init_schema()
+    (st.success if ok else st.error)(msg)
+
     st.subheader("Export CSV")
     for table in ["accounts","contacts","opportunities","quotes","quote_items","activities"]:
         try:
